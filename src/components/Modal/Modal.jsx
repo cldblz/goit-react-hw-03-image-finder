@@ -12,12 +12,18 @@ class Modal extends Component {
   };
 
   componentDidMount() {
-    window.addEventListener('keydown', e => {
-      if (e.code === 'Escape') {
-        this.props.closeModal();
-      }
-    });
+    window.addEventListener('keydown', this.handleEscapeClose);
   }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.handleEscapeClose);
+  }
+
+  handleEscapeClose = e => {
+    if (e.code === 'Escape') {
+      this.props.closeModal();
+    }
+  };
 
   onBackdropClick = e => {
     if (e.target === e.currentTarget) {

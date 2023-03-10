@@ -17,24 +17,32 @@ class App extends Component {
     query: '',
   };
 
-  handleSearch = async input => {
+  async componentDidUpdate(prevProps, prevState) {
+    const { query, nextPage } = this.state;
+    if (prevState.query !== query || nextPage !== prevState.nextPage) {
+      this.setState({
+        isLoading: true,
+      });
+
+      const data = await fetchImages(query, nextPage);
+      const images = data.map(({ id, webformatURL, largeImageURL, tags }) => {
+        return { id, webformatURL, largeImageURL, tags };
+      });
+
+      this.setState(prevState => {
+        return {
+          images: [...prevState.images, ...images],
+          isLoading: false,
+        };
+      });
+    }
+  }
+
+  handleSearch = input => {
     this.setState({
-      isLoading: true,
+      images: [],
       nextPage: 1,
       query: input,
-    });
-
-    const data = await fetchImages(input, 1);
-    const images = data.map(({ id, webformatURL, largeImageURL, tags }) => {
-      return { id, webformatURL, largeImageURL, tags };
-    });
-
-    this.setState(prevState => {
-      return {
-        images: [...images],
-        isLoading: false,
-        nextPage: prevState.nextPage + 1,
-      };
     });
   };
 
@@ -52,20 +60,9 @@ class App extends Component {
     });
   };
 
-  handleLoadMore = async () => {
-    const { query, nextPage } = this.state;
-
-    this.setState({ isLoading: true });
-
-    const data = await fetchImages(query, nextPage);
-    const images = data.map(({ id, webformatURL, largeImageURL, tags }) => {
-      return { id, webformatURL, largeImageURL, tags };
-    });
-
+  handleLoadMore = () => {
     this.setState(prevState => {
       return {
-        images: [...prevState.images, ...images],
-        isLoading: false,
         nextPage: prevState.nextPage + 1,
       };
     });
